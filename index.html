@@ -307,7 +307,7 @@ footer {
 }
 .footer-left { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; color: var(--muted); }
 .footer-right { font-size: 0.78rem; color: var(--muted); }
-.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; }
+.reveal { opacity: 1; transform: none; transition: opacity 0.8s ease, transform 0.8s ease; }
 .reveal.visible { opacity: 1; transform: none; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 /* ── STARTUP / CURAYA ── */
@@ -826,11 +826,30 @@ let molAngle=0;
 function tick(){document.getElementById('hero-clock').textContent=new Date().toTimeString().slice(0,8);}
 setInterval(tick,1000);tick();
 
-// ── SCROLL REVEAL
-const obs=new IntersectionObserver(entries=>{
-  entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*90);obs.unobserve(e.target);}});
-},{threshold:0.1});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+// ── SCROLL REVEAL (hidden first, then animate in)
+document.querySelectorAll('.reveal').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(28px)';
+});
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'none';
+      }, i * 90);
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.05, rootMargin: '0px 0px -50px 0px' });
+// Fallback: if IntersectionObserver never fires, show everything after 2s
+setTimeout(() => {
+  document.querySelectorAll('.reveal').forEach(el => {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+  });
+}, 2000);
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
 // ── FILTER TABS
 document.querySelectorAll('.filter-btn').forEach(b=>{
